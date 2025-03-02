@@ -1,0 +1,88 @@
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local ScreenGui = Instance.new("ScreenGui")
+local PlayerListFrame = Instance.new("Frame")
+local ItemListFrame = Instance.new("Frame")
+local ScrollingFrame = Instance.new("ScrollingFrame")
+local UIListLayout = Instance.new("UIListLayout")
+local UIListLayoutItems = Instance.new("UIListLayout")
+local CloseButton = Instance.new("TextButton")
+
+-- Configuração do GUI
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+PlayerListFrame.Size = UDim2.new(0, 150, 0, 200)
+PlayerListFrame.Position = UDim2.new(0, 10, 0, 10)
+PlayerListFrame.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+PlayerListFrame.Active = true
+PlayerListFrame.Draggable = true
+PlayerListFrame.Parent = ScreenGui
+
+ScrollingFrame.Size = UDim2.new(1, 0, 1, 0)
+ScrollingFrame.CanvasSize = UDim2.new(0, 0, 2, 0)
+ScrollingFrame.ScrollBarThickness = 5
+ScrollingFrame.Parent = PlayerListFrame
+
+UIListLayout.Parent = ScrollingFrame
+
+ItemListFrame.Size = UDim2.new(0, 150, 0, 200)
+ItemListFrame.Position = UDim2.new(0, 170, 0, 10)
+ItemListFrame.BackgroundColor3 = Color3.new(0.3, 0.3, 0.3)
+ItemListFrame.Active = true
+ItemListFrame.Draggable = true
+ItemListFrame.Parent = ScreenGui
+
+UIListLayoutItems.Parent = ItemListFrame
+
+CloseButton.Size = UDim2.new(0, 50, 0, 50)
+CloseButton.Position = UDim2.new(0, 320, 0, 10)
+CloseButton.BackgroundColor3 = Color3.new(1, 0, 0)
+CloseButton.Text = "X"
+CloseButton.Parent = ScreenGui
+CloseButton.Active = true
+CloseButton.Draggable = true
+
+CloseButton.MouseButton1Click:Connect(function()
+    PlayerListFrame.Visible = not PlayerListFrame.Visible
+    ItemListFrame.Visible = not ItemListFrame.Visible
+end)
+
+local function updatePlayerList()
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            local button = Instance.new("TextButton")
+            button.Size = UDim2.new(1, 0, 0, 30)
+            button.Text = player.Name
+            button.Parent = ScrollingFrame
+            
+            button.MouseButton1Click:Connect(function()
+                for _, child in pairs(ItemListFrame:GetChildren()) do
+                    if child:IsA("TextButton") then
+                        child:Destroy()
+                    end
+                end
+                
+                local backpack = player:FindFirstChild("Backpack")
+                if backpack then
+                    for _, item in pairs(backpack:GetChildren()) do
+                        local itemButton = Instance.new("TextButton")
+                        itemButton.Size = UDim2.new(1, 0, 0, 30)
+                        itemButton.Text = item.Name
+                        itemButton.Parent = ItemListFrame
+                        
+                        itemButton.MouseButton1Click:Connect(function()
+                            item.Parent = LocalPlayer.Backpack
+                            PlayerListFrame.Visible = false
+                            ItemListFrame.Visible = false
+                        end)
+                    end
+                end
+            end)
+        end
+    end
+end
+
+updatePlayerList()
+
+Players.PlayerAdded:Connect(updatePlayerList)
+Players.PlayerRemoving:Connect(updatePlayerList)
