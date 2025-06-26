@@ -1,88 +1,126 @@
+-- 🔥 Backpack Viewer Compacto 🔥
+
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
+
+-- Criar GUI
 local ScreenGui = Instance.new("ScreenGui")
-local PlayerListFrame = Instance.new("Frame")
-local ItemListFrame = Instance.new("Frame")
-local ScrollingFrame = Instance.new("ScrollingFrame")
-local UIListLayout = Instance.new("UIListLayout")
-local UIListLayoutItems = Instance.new("UIListLayout")
-local CloseButton = Instance.new("TextButton")
-
--- Configuração do GUI
+ScreenGui.Name = "BackpackViewer"
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
 
-PlayerListFrame.Size = UDim2.new(0, 150, 0, 200)
-PlayerListFrame.Position = UDim2.new(0, 10, 0, 10)
-PlayerListFrame.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
-PlayerListFrame.Active = true
-PlayerListFrame.Draggable = true
-PlayerListFrame.Parent = ScreenGui
+-- 🪟 Frame Principal (Pequeno e Compacto)
+local Main = Instance.new("Frame")
+Main.Parent = ScreenGui
+Main.Size = UDim2.new(0, 200, 0, 230) -- Tamanho bem pequeno
+Main.Position = UDim2.new(0.5, -100, 0.5, -115)
+Main.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+Main.BorderSizePixel = 0
+Main.Active = true
+Main.Draggable = true
 
-ScrollingFrame.Size = UDim2.new(1, 0, 1, 0)
-ScrollingFrame.CanvasSize = UDim2.new(0, 0, 2, 0)
-ScrollingFrame.ScrollBarThickness = 5
-ScrollingFrame.Parent = PlayerListFrame
+-- 🔖 Título
+local Title = Instance.new("TextLabel")
+Title.Parent = Main
+Title.Size = UDim2.new(1, 0, 0, 25)
+Title.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+Title.Text = "🎒 Backpack Viewer"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 14
+Title.BorderSizePixel = 0
 
-UIListLayout.Parent = ScrollingFrame
+-- 📜 Lista de Jogadores
+local PlayerFrame = Instance.new("ScrollingFrame")
+PlayerFrame.Parent = Main
+PlayerFrame.Size = UDim2.new(0, 90, 1, -35)
+PlayerFrame.Position = UDim2.new(0, 5, 0, 30)
+PlayerFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+PlayerFrame.ScrollBarThickness = 4
+PlayerFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+PlayerFrame.BorderSizePixel = 0
 
-ItemListFrame.Size = UDim2.new(0, 150, 0, 200)
-ItemListFrame.Position = UDim2.new(0, 170, 0, 10)
-ItemListFrame.BackgroundColor3 = Color3.new(0.3, 0.3, 0.3)
-ItemListFrame.Active = true
-ItemListFrame.Draggable = true
-ItemListFrame.Parent = ScreenGui
+-- 🎒 Lista de Itens
+local ItemFrame = Instance.new("ScrollingFrame")
+ItemFrame.Parent = Main
+ItemFrame.Size = UDim2.new(0, 90, 1, -35)
+ItemFrame.Position = UDim2.new(0, 105, 0, 30)
+ItemFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+ItemFrame.ScrollBarThickness = 4
+ItemFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+ItemFrame.BorderSizePixel = 0
 
-UIListLayoutItems.Parent = ItemListFrame
+-- Layouts para organização
+local PlayerLayout = Instance.new("UIListLayout")
+PlayerLayout.Parent = PlayerFrame
+PlayerLayout.SortOrder = Enum.SortOrder.LayoutOrder
+PlayerLayout.Padding = UDim.new(0, 3)
 
-CloseButton.Size = UDim2.new(0, 50, 0, 50)
-CloseButton.Position = UDim2.new(0, 320, 0, 10)
-CloseButton.BackgroundColor3 = Color3.new(1, 0, 0)
-CloseButton.Text = "X"
-CloseButton.Parent = ScreenGui
-CloseButton.Active = true
-CloseButton.Draggable = true
+local ItemLayout = Instance.new("UIListLayout")
+ItemLayout.Parent = ItemFrame
+ItemLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ItemLayout.Padding = UDim.new(0, 3)
 
-CloseButton.MouseButton1Click:Connect(function()
-    PlayerListFrame.Visible = not PlayerListFrame.Visible
-    ItemListFrame.Visible = not ItemListFrame.Visible
-end)
-
-local function updatePlayerList()
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer then
-            local button = Instance.new("TextButton")
-            button.Size = UDim2.new(1, 0, 0, 30)
-            button.Text = player.Name
-            button.Parent = ScrollingFrame
-            
-            button.MouseButton1Click:Connect(function()
-                for _, child in pairs(ItemListFrame:GetChildren()) do
-                    if child:IsA("TextButton") then
-                        child:Destroy()
-                    end
-                end
-                
-                local backpack = player:FindFirstChild("Backpack")
-                if backpack then
-                    for _, item in pairs(backpack:GetChildren()) do
-                        local itemButton = Instance.new("TextButton")
-                        itemButton.Size = UDim2.new(1, 0, 0, 30)
-                        itemButton.Text = item.Name
-                        itemButton.Parent = ItemListFrame
-                        
-                        itemButton.MouseButton1Click:Connect(function()
-                            item.Parent = LocalPlayer.Backpack
-                            PlayerListFrame.Visible = false
-                            ItemListFrame.Visible = false
-                        end)
-                    end
-                end
-            end)
-        end
-    end
+-- 🔍 Função para ver a Backpack do jogador
+local function ShowBackpack(player)
+	for _, v in pairs(ItemFrame:GetChildren()) do
+		if v:IsA("TextButton") then
+			v:Destroy()
+		end
+	end
+	
+	local backpack = player:FindFirstChild("Backpack")
+	if backpack then
+		for _, item in pairs(backpack:GetChildren()) do
+			local ItemButton = Instance.new("TextButton")
+			ItemButton.Parent = ItemFrame
+			ItemButton.Size = UDim2.new(1, -6, 0, 20)
+			ItemButton.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
+			ItemButton.Text = item.Name
+			ItemButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+			ItemButton.Font = Enum.Font.Gotham
+			ItemButton.TextSize = 12
+			ItemButton.BorderSizePixel = 0
+			ItemButton.MouseButton1Click:Connect(function()
+				if LocalPlayer.Backpack:FindFirstChild(item.Name) == nil then
+					item:Clone().Parent = LocalPlayer.Backpack
+				end
+			end)
+		end
+	end
+	
+	ItemFrame.CanvasSize = UDim2.new(0, 0, 0, ItemLayout.AbsoluteContentSize.Y + 5)
 end
 
-updatePlayerList()
+-- 🔄 Atualizar Lista de Jogadores
+local function UpdatePlayerList()
+	for _, v in pairs(PlayerFrame:GetChildren()) do
+		if v:IsA("TextButton") then
+			v:Destroy()
+		end
+	end
+	
+	for _, player in pairs(Players:GetPlayers()) do
+		local PlayerButton = Instance.new("TextButton")
+		PlayerButton.Parent = PlayerFrame
+		PlayerButton.Size = UDim2.new(1, -6, 0, 20)
+		PlayerButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+		PlayerButton.Text = player.Name
+		PlayerButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+		PlayerButton.Font = Enum.Font.Gotham
+		PlayerButton.TextSize = 12
+		PlayerButton.BorderSizePixel = 0
+		PlayerButton.MouseButton1Click:Connect(function()
+			ShowBackpack(player)
+		end)
+	end
+	
+	PlayerFrame.CanvasSize = UDim2.new(0, 0, 0, PlayerLayout.AbsoluteContentSize.Y + 5)
+end
 
-Players.PlayerAdded:Connect(updatePlayerList)
-Players.PlayerRemoving:Connect(updatePlayerList)
+-- 🔁 Atualizar automaticamente
+Players.PlayerAdded:Connect(UpdatePlayerList)
+Players.PlayerRemoving:Connect(UpdatePlayerList)
+
+-- 🔥 Atualiza ao abrir
+UpdatePlayerList()
